@@ -2,7 +2,6 @@ package com.quanticheart.especialpermissions.permissions.domain.useCases
 
 import android.Manifest
 import android.os.Build
-import android.util.Log
 import com.quanticheart.especialpermissions.permissions.domain.helpers.SystemPermission
 import com.quanticheart.especialpermissions.permissions.domain.models.CommonPermissions
 import com.quanticheart.especialpermissions.permissions.domain.models.Permission
@@ -21,6 +20,11 @@ class PermissionsUseCase(private val permission: SystemPermission) {
             enabled = permission.runInBackGround()
         )
 
+        val exactAlarm = Permission(
+            required = permission.apiRequireExactAlarm(),
+            enabled = permission.exactAlarm()
+        )
+
         val notificationPermission = Permission(
             required = permission.apiRequireNotification(),
             enabled = permission.notifications()
@@ -32,15 +36,15 @@ class PermissionsUseCase(private val permission: SystemPermission) {
             adminPermission.enabled &&
                     backgroundPermission.enabled &&
                     notificationPermission.enabled &&
+                    exactAlarm.enabled &&
                     commons.first
-
-        Log.e("PermissionsUseCase", "verifyPermission: ${commons.second}")
 
         return Permissions(
             allEnabled = allOK,
             admin = adminPermission,
             background = backgroundPermission,
             notification = notificationPermission,
+            exactAlarm = exactAlarm,
             commons = CommonPermissions(
                 allEnabled = commons.first,
                 listToRequire = commons.second,

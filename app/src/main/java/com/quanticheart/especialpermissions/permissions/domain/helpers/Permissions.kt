@@ -18,26 +18,27 @@ import androidx.core.content.ContextCompat
 @SuppressLint("ObsoleteSdkInt")
 object Permissions {
     fun admin(context: Context) {
-        val intent = Intent()
-        intent.setComponent(
-            ComponentName(
+        with(Intent()) {
+            component = ComponentName(
                 "com.android.settings",
                 "com.android.settings.DeviceAdminSettings"
             )
-        )
-        context.startActivity(intent)
+            setupDefaultIntent()
+            context.startActivity(this)
+        }
     }
 
     @SuppressLint("BatteryLife")
     fun background(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            val packageName: String = context.packageName
-            val pm = context.getSystemService(POWER_SERVICE) as PowerManager?
-            if (!pm!!.isIgnoringBatteryOptimizations(packageName)) {
-                intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.setData(Uri.parse("package:$packageName"))
-                context.startActivity(intent)
+            with(Intent()) {
+                val pm = context.getSystemService(POWER_SERVICE) as PowerManager?
+                if (!pm!!.isIgnoringBatteryOptimizations(context.packageName)) {
+                    action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                    data = Uri.parse("package:${context.packageName}")
+                    setupDefaultIntent()
+                    context.startActivity(this)
+                }
             }
         }
     }
@@ -46,11 +47,11 @@ object Permissions {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
                 activity.shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS) -> {
-                    val packageName: String = activity.packageName
-                    val settingsIntent: Intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        .putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-                    activity.startActivity(settingsIntent)
+                    with(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)) {
+                        putExtra(Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        setupDefaultIntent()
+                        activity.startActivity(this)
+                    }
                 }
 
                 else ->
@@ -64,24 +65,24 @@ object Permissions {
     }
 
     fun permissions(context: Context) {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        with(intent) {
+        with(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)) {
             data = Uri.fromParts("package", context.packageName, null)
-            addCategory(Intent.CATEGORY_DEFAULT)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-            addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+            setupDefaultIntent()
+            context.startActivity(this)
         }
-        context.startActivity(intent)
     }
 
-    fun goSchedulePermissionSettingsScreen(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Intent().also { intent ->
-                intent.action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                intent.setData(Uri.fromParts("package", context.packageName, null))
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
+    fun exactAlarm(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 and above
+            with(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)) {
+                data = Uri.parse("package:" + context.packageName)
+                setupDefaultIntent()
+                context.startActivity(this)
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12
+            with(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)) {
+                setupDefaultIntent()
+                context.startActivity(this)
             }
         }
     }
@@ -119,5 +120,12 @@ object Permissions {
             .setCancelable(false)
             .create()
         alertDialogRational.show()
+    }
+
+    private fun Intent.setupDefaultIntent() {
+        addCategory(Intent.CATEGORY_DEFAULT)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+        addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
     }
 }

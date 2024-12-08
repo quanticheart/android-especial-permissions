@@ -24,7 +24,8 @@ class PermissionsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.next.setOnClickListener {
-            Permissions.goSchedulePermissionSettingsScreen(this)
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
 
         viewModel.permissions.observe(this) { permissions ->
@@ -32,6 +33,7 @@ class PermissionsActivity : AppCompatActivity() {
             setupBackgroundPermission(permissions.background)
             setupNotificationPermission(permissions.notification)
             setupOthersPermission(permissions.commons)
+            setupExactAlarmPermission(permissions.exactAlarm)
             setupButton(permissions.allEnabled)
         }
     }
@@ -78,6 +80,21 @@ class PermissionsActivity : AppCompatActivity() {
             }
         } else {
             binding.pNotification.visibility = View.GONE
+        }
+    }
+
+    private fun setupExactAlarmPermission(background: Permission) {
+        if (background.required) {
+            binding.pExactAlarm.visibility = View.VISIBLE
+            binding.switchExactAlarm.apply {
+                isChecked = background.enabled
+            }
+            binding.btnPExactAlarm.setOnClickListener {
+                if (!background.enabled)
+                    Permissions.exactAlarm(this@PermissionsActivity)
+            }
+        } else {
+            binding.pExactAlarm.visibility = View.GONE
         }
     }
 

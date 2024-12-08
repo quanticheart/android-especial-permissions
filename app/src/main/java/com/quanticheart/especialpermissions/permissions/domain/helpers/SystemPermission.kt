@@ -2,6 +2,7 @@ package com.quanticheart.especialpermissions.permissions.domain.helpers
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
@@ -12,10 +13,12 @@ import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import com.quanticheart.especialpermissions.permissions.domain.receivers.DeviceAdminReceiver
 
+
 class SystemPermission(private val context: Context) {
 
     fun isDeviceAdmin(): Boolean {
-        val devicePolicyManager = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val devicePolicyManager =
+            context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val componentName = ComponentName(context, DeviceAdminReceiver::class.java)
         return devicePolicyManager.isAdminActive(componentName)
     }
@@ -43,7 +46,6 @@ class SystemPermission(private val context: Context) {
         } else true
     }
 
-    @SuppressLint("ObsoleteSdkInt")
     fun apiRequireNotification() =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
@@ -63,5 +65,21 @@ class SystemPermission(private val context: Context) {
             }
         }
         return Pair(true, listOf())
+    }
+
+    fun apiRequireExactAlarm() =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 and above
+            true
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12
+            true
+        } else false
+
+    fun exactAlarm(): Boolean {
+        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 and above
+            manager.canScheduleExactAlarms()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12
+            manager.canScheduleExactAlarms()
+        } else true
     }
 }
