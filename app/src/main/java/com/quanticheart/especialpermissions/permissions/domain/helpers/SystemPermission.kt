@@ -11,7 +11,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.PowerManager
 import androidx.core.content.ContextCompat
-import com.quanticheart.especialpermissions.permissions.domain.receivers.DeviceAdminReceiver
+import com.quanticheart.especialpermissions.permissions.services.DeviceAdminReceiver
 
 
 class SystemPermission(private val context: Context) {

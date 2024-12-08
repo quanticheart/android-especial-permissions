@@ -1,4 +1,4 @@
-package com.quanticheart.especialpermissions.permissions.domain.receivers
+package com.quanticheart.especialpermissions.permissions.services
 
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
